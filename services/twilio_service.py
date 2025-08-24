@@ -1,18 +1,4 @@
-from typing import Any, Dict
-from config.settings import settings
-
-
-def send_sms(to: str, body: str) -> Dict[str, Any]:
-    """Stub for sending SMS via Twilio.
-
-    Replace with real Twilio client usage that reads `settings.twilio_account_sid`
-    and `settings.twilio_auth_token`.
-    """
-    # TODO: implement real Twilio client call
-    return {"to": to, "body": body, "status": "stub-sent"}
-
-
-__all__ = ["send_sms"]
+import os
 from typing import Dict, Any
 from fastapi import Request
 from fastapi.responses import HTMLResponse
@@ -33,8 +19,13 @@ class TwilioService:
         logger.info(f"📞 Appointment call from {call_info['caller_id']}, Call SID: {call_info['call_sid']}")
         
         # Get Railway app URL (Railway provides this automatically)
-        railway_url = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "your-app.railway.app")
-        websocket_url = f"wss://{railway_url}/ws/{call_info['call_sid']}"
+        railway_url = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+        if not railway_url:
+            # Fallback for local development
+            railway_url = "localhost:8000"
+            websocket_url = f"ws://{railway_url}/ws/{call_info['call_sid']}"
+        else:
+            websocket_url = f"wss://{railway_url}/ws/{call_info['call_sid']}"
         
         logger.info(f"Generated WebSocket URL: {websocket_url}")
         

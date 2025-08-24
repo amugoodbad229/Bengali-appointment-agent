@@ -1,23 +1,3 @@
-import httpx
-from config.settings import settings
-
-
-async def post_to_n8n(payload: dict) -> dict:
-    """Post a payload to the configured n8n webhook URL.
-
-    This is a small, resilient helper that can be expanded with retries.
-    """
-    url = settings.n8n_webhook_url
-    if not url:
-        raise RuntimeError("n8n webhook URL is not configured")
-
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        resp = await client.post(url, json=payload)
-        resp.raise_for_status()
-        return resp.json()
-
-
-__all__ = ["post_to_n8n"]
 import asyncio
 import json
 from typing import Dict, Any, Optional
@@ -32,7 +12,7 @@ class N8nIntegrationService:
         self.session_id = session_id
         self.caller_id = caller_id
         self.webhook_url = settings.n8n_webhook_url
-        logger.info(f"N8n appointment service initialized for session {session_id}")
+        logger.info(f"📅 N8n appointment service initialized for session {session_id}")
     
     async def send_to_n8n(self, user_message: str, message_type: str = "appointment_request") -> Optional[str]:
         """Send appointment request to n8n for processing"""
@@ -49,7 +29,8 @@ class N8nIntegrationService:
                 "service_type": "appointment_booking",
                 "metadata": {
                     "language": "bengali" if self._is_bengali(user_message) else "english",
-                    "intent": self._detect_intent(user_message)
+                    "intent": self._detect_intent(user_message),
+                    "platform": "twilio_voice"
                 }
             }
             
@@ -94,11 +75,12 @@ class N8nIntegrationService:
         """Simple intent detection for appointment booking"""
         text_lower = text.lower()
         
-        if any(word in text_lower for word in ["appointment", "book", "schedule", "time", "date"]):
+        # Bengali and English keywords for appointment intents
+        if any(word in text_lower for word in ["appointment", "book", "schedule", "time", "date", "nite chai", "korte chai"]):
             return "book_appointment"
-        elif any(word in text_lower for word in ["cancel", "reschedule", "change"]):
+        elif any(word in text_lower for word in ["cancel", "reschedule", "change", "cancel korte", "change korte"]):
             return "modify_appointment"
-        elif any(word in text_lower for word in ["confirm", "check", "status"]):
+        elif any(word in text_lower for word in ["confirm", "check", "status", "confirm ache", "check korte"]):
             return "check_appointment"
         else:
             return "general_inquiry"
