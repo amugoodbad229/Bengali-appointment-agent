@@ -1,26 +1,26 @@
-# Core Pipecat framework with Bengali support
-pipecat-ai[google]>=0.0.40
+# Core Pipecat framework with Google/Gemini support
+pipecat-ai[google,twilio,silero]>=0.0.80
 
 # Web framework
 fastapi>=0.104.1
 uvicorn[standard]>=0.24.0
 
-# HTTP requests for n8n integration
-aiohttp>=3.9.0
-
-# Environment variables and settings
+# Environment and settings
 python-dotenv>=1.0.0
 pydantic>=2.5.0
 pydantic-settings>=2.1.0
 
-# Audio processing
-numpy>=1.24.0
+# HTTP requests
+aiohttp>=3.9.0
 
 # Logging
 loguru>=0.7.2
 
 # WebSocket support
 websockets>=12.0
+
+# Audio processing
+numpy>=1.24.0
 
 # JSON handling
 orjson>=3.9.0
